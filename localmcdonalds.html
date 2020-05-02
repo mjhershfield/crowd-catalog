@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html onload="getNearbyMcDonalds()">
+    <head>
+        <title>Find Local McDonalds!</title>
+    </head>
+    <body>
+        <p id="text">McDonalds!</p>
+        <script>
+            function getNearbyMcDonalds() {
+                var xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        document.getElementById("text").innerHTML = this.responseText;
+                    }
+                };
+                xhttp.open("GET", "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?key=AIzaSyDSyEdgNgrTxKxgC7jwSsnAm15i9N0bI5Y&input=mcdonalds&inputtype=textquery&locationbias=ipbias&fields=formatted_address", true);
+                xhttp.send();
+            }
+        </script>
+    </body>
+</html>
