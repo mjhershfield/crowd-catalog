@@ -1,21 +1,29 @@
 <!DOCTYPE html>
-<html onload="getNearbyMcDonalds()">
+<html>
     <head>
         <title>Find Local McDonalds!</title>
     </head>
     <body>
-        <p id="text">McDonalds!</p>
-        <script type="text/javascript">
-            function getNearbyMcDonalds() {
+        <p id="text">business name here</p>
+        <p id="address">business address here for closest McDonald's</p>
+        <script>
+            async function getNearbyMcDonalds(lat, long) {
+                let proxyurl = "https://cors-anywhere.herokuapp.com/"
+                let requesturl = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?key=AIzaSyDSyEdgNgrTxKxgC7jwSsnAm15i9N0bI5Y&input=mcdonalds&inputtype=textquery&locationbias=point:" + lat + "," + long + "&fields=formatted_address,geometry,name";
+                let url = proxyurl + requesturl;
                 var xhttp = new XMLHttpRequest();
                 xhttp.onreadystatechange = function() {
                     if (this.readyState == 4 && this.status == 200) {
-                        alert("request successful");
+                        alert("it worked");
+                        let parsedResponse = JSON.parse(this.responseText);
+                        document.getElementById("text").innerHTML = parsedResponse["candidates"][0]["name"];
+                        document.getElementById("address").innerHTML = parsedResponse["candidates"][0]["formatted_address"];
                     }
-                }
-                xhttp.open("GET", "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?key=AIzaSyDSyEdgNgrTxKxgC7jwSsnAm15i9N0bI5Y&input=mcdonalds&inputtype=textquery&locationbias=ipbias&fields=formatted_address", true);
+                };
+                xhttp.open("GET", url, true);
                 xhttp.send();
             }
+            getNearbyMcDonalds(29.6752, -82.356);
         </script>
     </body>
 </html>
