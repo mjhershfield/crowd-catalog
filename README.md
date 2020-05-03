@@ -17,3 +17,6 @@ If we were to continue this project, we would:
 - Make a basic account system so reviews are not anonymous
 - Improve database security
 - Make the site look prettier in general
+
+
+_This project uses [Spectre.css](https://picturepan2.github.io/spectre/index.html) for its styling, credit [Yan Zhu](https://twitter.com/picturepan2)_
