@@ -4,9 +4,9 @@
     <title>Crowd Catalog</title>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
-    <link rel="stylesheet" href="spectre.css">
-    <link rel="stylesheet" href="spectre-exp.css">
-    <link rel="stylesheet" href="spectre-icons.css">
+    <link rel="stylesheet" href="styles/spectre.min.css">
+    <link rel="stylesheet" href="styles/spectre-exp.min.css">
+    <link rel="stylesheet" href="styles/spectre-icons.min.css">
     <style>
       /* Always set the map height explicitly to define the size of the div
        * element that contains the map. */
@@ -29,11 +29,24 @@
       }
 
       .searchform {
-          height: 50px;
+          height: 75px;
           position: fixed;
           top: 20px;
           right: 20px;
           left: 20px;
+      }
+
+      #searchbox {
+        height: 75px;
+      }
+
+      #writeReviewButton {
+        position: fixed;
+        left: 20px;
+        bottom: 20px;
+        height: 80px;
+        width: 80px;
+        display: none;
       }
     </style>
   </head>
@@ -41,15 +54,66 @@
     <div id="map"></div>
     <div class="searchform has-icon-right">
         <input class="form-input" type="text" id="searchbox" placeholder="Search">
-        <i class="form-icon icon icon-arrow-right c-hand" onclick="verifySearchPopulated()"></i>
+        <i class="form-icon icon icon-arrow-right c-hand icon-2x" onclick="verifySearchPopulated()"></i>
     </div>
-    <div class="toast toast-error" id ="error-toast">
+    <div class="toast toast-error" id ="toast">
         <i class="icon icon-cross float-right c-hand" onclick="fadeToast()"></i>
         <p>Your location could not be found</p>
     </div>
+    <div class="modal" id="writeReviewModal">
+      <div class="modal-overlay"></div>
+      <div class="modal-container">
+      <div class="modal-body">
+          <!-- Social Distance -->
+          <div class="form-group">
+              <label class="form-label" >Were social distancing guidelines followed?</label>
+             <select class="form-select" id = "socialDistance" autocomplete="off">
+                <option>Choose an option</option>
+                <option>Never</option>
+                <option>Sometimes</option>
+                <option>Always</option>
+              </select>
+          </div>
+          <!-- Sanitary -->
+          <div class="form-group">
+              <label class="form-label" >How sanitary was the location?</label>
+              <input class="form-input" type="number" id="sanitary" placeholder="1-10" min="1" max="10" autocomplete="off">
+          </div>
+          <!-- Safeness -->
+          <div class="form-group">
+              <label class="form-label" >How safe did you feel?</label>
+              <input class="form-input" type="number" id="safeness" placeholder="1-10" min="1" max="10" autocomplete="off">
+          </div>
+          <!-- Wait Time -->
+          <div class="form-group">
+              <label class="form-label" >Approximately how long did you wait in line?</label>
+              <input class="form-input" type="number" id="waitTime" placeholder="Time in minutes" autocomplete="off">
+          </div>
+          <!-- Masks -->
+          <div class="form-group">
+              <label class="form-label" >Who wore a face covering?</label>
+             <select class="form-select" id = "masks" autocomplete="off">
+                <option>Choose an option</option>
+                <option>No One</option>
+                <option>Staff Only</option>
+                <option>Everyone</option>
+              </select>
+        </div>
+        <!-- Extra Info -->
+        <div class="form-group">
+            <label class="form-label" >Anything else?</label>
+            <textarea class="form-input" id="extraInfo" placeholder="Other Info" rows="3" autocomplete="off"></textarea>   
+        </div>
 
+        <button class="btn btn-primary" onclick="addReview()">Submit</button>
+        <button class="btn" onclick="showReviewModal(false)">Cancel</button>
+      
+      </div>
+      </div>
+    </div>
+    <button class="btn s-circle" id="writeReviewButton" onclick="showReviewModal(true)"><i class="icon icon-3x icon-message"></i></button>
     <script>
-      var map, infoWindow, userMarker, pos, businessSearchResults, businessMarkersArray;
+      var map, infoWindow, userMarker, pos, businessSearchResults, businessMarkersArray, selectedBusiness;
       businessMarkersArray = []
       function initMap() {
         //Create Google Map and User Marker
@@ -77,19 +141,19 @@
             userMarker.setPosition(pos);
             userMarker.setVisible(true);
           }, function() {
-            showErrorToast("Your location could not be found");
+            showToast("error", "Your location could not be found");
             console.log("geolocation supported but not working");
           });
         } else {
           // Browser doesn't support Geolocation
-          showErrorToast("Your browser doesn't support geolocation");
+          showToast("error", "Your browser doesn't support geolocation");
           console.log("geolocation not supported");
         }
       }
 
       function searchNearbyPlaces() {
           if (typeof(pos) == "undefined") {
-            showErrorToast("Your location could not be found");
+            showToast("error", "Your location could not be found");
             console.log("geolocation is broken")
           } else {
             let searchquery = encodeURIComponent(document.getElementById("searchbox").value);
@@ -110,7 +174,9 @@
                         let locationMarker = new google.maps.Marker({position: businessSearchResults[i]["geometry"]["location"], map: map});
                         businessMarkersArray.push(locationMarker);
                     }
-                    map.setCenter(pos);
+                    selectedBusiness = businessSearchResults[0];
+                    map.setCenter(selectedBusiness["geometry"]["location"]);
+                    showReviewButton(true);
                 }
             };
             xhttp.open("GET", url, true);
@@ -118,23 +184,118 @@
           }
       }
 
-      function showErrorToast(error) {
-        document.getElementById("error-toast").innerHTML = error;
-        document.getElementById("error-toast").style.display = "inline";
-        setTimeout(function() {fadeToast();}, 10000)
+      function showToast(type, msg) {
+        document.getElementById("toast").classList.remove("toast-error");
+        document.getElementById("toast").classList.remove("toast-success");
+        document.getElementById("toast").innerHTML = msg;
+        document.getElementById("toast").classList.add("toast-" + type);
+        document.getElementById("toast").style.display = "inline";
+        setTimeout(function() {fadeToast();}, 10000);
       }
 
       function fadeToast() {
-        document.getElementById("error-toast").style.display = "none";
+        document.getElementById("toast").style.display = "none";
       }
 
       function verifySearchPopulated() {
           if (document.getElementById("searchbox").value != "") {
               searchNearbyPlaces();
           } else {
-              showErrorToast("Please enter a search query")
+              showToast("error", "Please enter a search query")
           }
       }
+      
+      function addReview() {
+        event.preventDefault();
+        let formValid = true;
+        let placeid = selectedBusiness["place_id"];
+        let socialdistancing = getSocialDistancing();
+        let sanitation = document.getElementById("sanitary").value;
+        if (sanitation > 10 || sanitation < 1) {
+          console.log("invalid sanitation");
+          formValid = false;
+        }
+        let safety = document.getElementById("safeness").value;
+        if (safety > 10 || safety < 1) {
+          console.log("invalid safety");
+          formValid = false;
+        }
+        let waiting = document.getElementById("waitTime").value;
+        if (waiting < 1) {
+          console.log("invalid waiting");
+          formValid = false;
+        }
+        let masks = getMasks();
+        let other = encodeURIComponent(document.getElementById("extraInfo").value);
+        if (formValid) {
+          let xhttp = new XMLHttpRequest();
+          xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+              let parsedResponse = JSON.parse(this.responseText);
+              if (parsedResponse["status_message"] == "success") {
+                showReviewModal(false);
+                showToast("success", "You left a review!");
+              }
+            }
+          }
+          let url = "api/makereview.php?placeid=" + placeid + "&socialdistancing=" + socialdistancing + "&sanitation=" + sanitation + "&safety=" + safety + "&waiting=" + waiting + "&masks=" + masks + "&other=" + other;
+          xhttp.open("GET", url, true);
+          xhttp.send();
+        }
+      }
+
+      function getSocialDistancing() {
+        socialdistancing = document.getElementById("socialDistance").value;
+        switch(socialdistancing) {
+          case "Choose an option": 
+            return 0;
+            break;
+          case "Never":
+            return 1;
+            break;
+          case "Sometimes":
+            return 2;
+            break;
+          case "Always":
+            return 3;
+            break;
+        }
+      }
+
+      function getMasks() {
+        masks = document.getElementById("masks").value;
+        switch(masks) {
+          case "Choose an option": 
+            return 0;
+            break;
+          case "No One":
+            return 1;
+            break;
+          case "Staff Only":
+            return 2;
+            break;
+          case "Everyone":
+            return 3;
+            break;
+        }
+      }
+
+      function showReviewModal(vis) {
+        vis ? document.getElementById("writeReviewModal").classList.add("active") : document.getElementById("writeReviewModal").classList.remove("active");
+        if (!vis) {
+          document.getElementById("socialDistance").value = "";
+          document.getElementById("sanitary").value = "";
+          document.getElementById("safeness").value = "";
+          document.getElementById("waitTime").value = "";
+          document.getElementById("extraInfo").value = "";
+          document.getElementById("masks").value = "";
+        }
+      }
+
+      function showReviewButton(vis) {
+        vis ? document.getElementById("writeReviewButton").style.display = "block" : document.getElementById("writeReviewButton").style.display("none");
+      }
+
     </script>
     <script async defer
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDSyEdgNgrTxKxgC7jwSsnAm15i9N0bI5Y&callback=initMap">
