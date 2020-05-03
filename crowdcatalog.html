@@ -91,7 +91,7 @@
             showErrorToast("Your location could not be found");
             console.log("geolocation is broken")
           } else {
-            let searchquery = URIEncode(document.getElementById("searchbox").value);
+            let searchquery = encodeURIComponent(document.getElementById("searchbox").value);
             let proxyurl = "https://cors-anywhere.herokuapp.com/"
             let requesturl = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?key=AIzaSyDSyEdgNgrTxKxgC7jwSsnAm15i9N0bI5Y&input=" + searchquery + "&inputtype=textquery&locationbias=circle:2000@"+pos.lat+","+pos.lng + "&fields=formatted_address,name,geometry,place_id";
             let url = proxyurl + requesturl;
