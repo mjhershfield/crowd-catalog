@@ -16,7 +16,7 @@ If we were to continue this project, we would:
 - Allow searching for locations near the user and allow the user to select which place near them they would like to review/view reviews for
 - Make a basic account system so reviews are not anonymous
 - Improve database security
-- Make the site look prettier in general
+- Make the site look prettier with more CSS styling and remove random dev bits such as the "it worked" alert :facepalm:
 
 
 _This project uses [Spectre.css](https://picturepan2.github.io/spectre/index.html) for its styling, credit [Yan Zhu](https://twitter.com/picturepan2)_
