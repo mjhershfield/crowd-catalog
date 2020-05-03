@@ -10,11 +10,11 @@ We wanted to make a system where people could choose a place, write a review abo
 We wanted to implement this using the Google Maps Places and Javascript APIs so that it would be be cross-platform without worries. Unfortunately, we switched over to this project halfway through Saturday and did not have enough time to implement reading reviews. But, if you would like, you can still search up a location (assuming you give the site location access) and the site will select the closest place that matches your query. You have to click the arrow button in the search box to send the search. Once a location has been selected, you can write a review for it using the message button in the bottom left. All submitted reviews are held in a MySQL database, but we have not yet implemented a way to access other people's reviews.
 
 If we were to continue this project, we would:
-- Use the proper client side Places API. (We accidentally used the server side API but it was too late to change once we realized)
+- Use the proper client side Places API. (We accidentally used the server side API but it was too late to change once we realized :facepalm:)
   - This would allow us to not have to use the sketchy CORS workaround and use ip location in addition to geolocation
 - Implement Viewing Others' reviews
 - Allow searching for locations near the user and allow the user to select which place near them they would like to review/view reviews for
-- Make a basic account system so reviews are not anonymous
+- Make a basic account system so reviews are not anonymous and we can prevent abuse if this becomes an actual service
 - Improve database security
 - Make the site look prettier with more CSS styling and remove random dev bits such as the "it worked" alert :facepalm:
 
