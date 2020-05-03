@@ -4,6 +4,9 @@
     <title>Crowd Catalog</title>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
+    <link rel="stylesheet" href="spectre.css">
+    <link rel="stylesheet" href="spectre-exp.css">
+    <link rel="stylesheet" href="spectre-icons.css">
     <style>
       /* Always set the map height explicitly to define the size of the div
        * element that contains the map. */
@@ -16,17 +19,44 @@
         margin: 0;
         padding: 0;
       }
+
+      .toast {
+        max-width: 400px;
+        display: none;
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+      }
+
+      .searchform {
+          height: 50px;
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          left: 20px;
+      }
     </style>
   </head>
   <body>
     <div id="map"></div>
+    <div class="searchform has-icon-right">
+        <input class="form-input" type="text" id="searchbox" placeholder="Search">
+        <i class="form-icon icon icon-arrow-right c-hand" onclick="verifySearchPopulated()"></i>
+    </div>
+    <div class="toast toast-error" id ="error-toast">
+        <i class="icon icon-cross float-right c-hand" onclick="fadeToast()"></i>
+        <p>Your location could not be found</p>
+    </div>
+
     <script>
-      var map, infoWindow, userMarker, pos, businessArray, businessLocations;
+      var map, infoWindow, userMarker, pos, businessSearchResults, businessMarkersArray;
       function initMap() {
         //Create Google Map and User Marker
         map = new google.maps.Map(document.getElementById('map'), {
           center: {lat: -34.397, lng: 150.644},
-          zoom: 6
+          zoom: 6,
+          fullscreenControl: false,
+          mapTypeControl: false
         });
         userMarker = new google.maps.Marker();
         userMarker.setMap(map);
@@ -45,39 +75,63 @@
             map.setCenter(pos);
             userMarker.setPosition(pos);
             userMarker.setVisible(true);
-            getNearbyPlaces();
           }, function() {
+            showErrorToast("Your location could not be found");
             console.log("geolocation supported but not working");
           });
         } else {
           // Browser doesn't support Geolocation
+          showErrorToast("Your browser doesn't support geolocation");
           console.log("geolocation not supported");
         }
       }
 
-      function getNearbyPlaces() {
+      function searchNearbyPlaces() {
           if (typeof(pos) == "undefined") {
-              console.log("geolocation is broken")
+            showErrorToast("Your location could not be found");
+            console.log("geolocation is broken")
           } else {
+            let searchquery = URIEncode(document.getElementById("searchbox").value);
             let proxyurl = "https://cors-anywhere.herokuapp.com/"
-            let requesturl = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?key=AIzaSyDSyEdgNgrTxKxgC7jwSsnAm15i9N0bI5Y&location=" + pos.lat + "," + pos.lng + "&rankby=distance";
+            let requesturl = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?key=AIzaSyDSyEdgNgrTxKxgC7jwSsnAm15i9N0bI5Y&input=" + searchquery + "&inputtype=textquery&locationbias=circle:2000@"+pos.lat+","+pos.lng + "&fields=formatted_address,name,geometry,place_id";
             let url = proxyurl + requesturl;
             var xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
                     alert("it worked");
-                    businessLocations = [];
-                    businessArray = JSON.parse(this.responseText)["results"];
-                    let numBusinesses = businessArray.length;
+                    for (let i = 0; i < businessMarkersArray.length; i += 1) {
+                        businessMarkersArray[i].setMap(null);
+                    }
+                    businessMarkersArray = [];
+                    businessSearchResults = JSON.parse(this.responseText)["candidates"];
+                    let numBusinesses = businessSearchResults.length;
                     for (let i = 0; i < numBusinesses; i += 1){
-                        let locationMarker = new google.maps.Marker({position: businessArray[i]["geometry"]["location"], map: map});
-                        businessLocations.push(locationMarker);
+                        let locationMarker = new google.maps.Marker({position: businessSearchResults[i]["geometry"]["location"], map: map});
+                        businessMarkersArray.push(locationMarker);
                     }
                     map.setCenter(pos);
                 }
             };
             xhttp.open("GET", url, true);
             xhttp.send();
+          }
+      }
+
+      function showErrorToast(error) {
+        document.getElementById("error-toast").innerHTML = error;
+        document.getElementById("error-toast").style.display = "inline";
+        setTimeout(function() {fadeToast();}, 10000)
+      }
+
+      function fadeToast() {
+        document.getElementById("error-toast").style.display = "none";
+      }
+
+      function verifySearchPopulated() {
+          if (document.getElementById("searchbox").value != "") {
+              searchNearbyPlaces();
+          } else {
+              showErrorToast("Please enter a search query")
           }
       }
     </script>
