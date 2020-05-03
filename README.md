@@ -11,7 +11,7 @@ We wanted to implement this using the Google Maps Places and Javascript APIs so 
 
 If we were to continue this project, we would:
 - Use the proper client side Places API. (We accidentally used the server side API but it was too late to change once we realized)
-  - This would allow us to not have to use the sketchy CORS workaround 
+  - This would allow us to not have to use the sketchy CORS workaround and use ip location in addition to geolocation
 - Implement Viewing Others' reviews
 - Allow searching for locations near the user and allow the user to select which place near them they would like to review/view reviews for
 - Make a basic account system so reviews are not anonymous
