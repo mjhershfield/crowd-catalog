@@ -21,7 +21,7 @@
   <body>
     <div id="map"></div>
     <script>
-      var map, infoWindow, userMarker,pos;
+      var map, infoWindow, userMarker, pos, businessArray, businessLocations;
       function initMap() {
         //Create Google Map and User Marker
         map = new google.maps.Map(document.getElementById('map'), {
@@ -60,16 +60,19 @@
               console.log("geolocation is broken")
           } else {
             let proxyurl = "https://cors-anywhere.herokuapp.com/"
-            let requesturl = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?key=AIzaSyDSyEdgNgrTxKxgC7jwSsnAm15i9N0bI5Y&input=mcdonalds&inputtype=textquery&locationbias=point:" + pos.lat + "," + pos.lng + "&fields=formatted_address,geometry,name";
+            let requesturl = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?key=AIzaSyDSyEdgNgrTxKxgC7jwSsnAm15i9N0bI5Y&location=" + pos.lat + "," + pos.lng + "&rankby=distance";
             let url = proxyurl + requesturl;
             var xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
                     alert("it worked");
-                    let parsedResponse = JSON.parse(this.responseText);
-                    console.log(parsedResponse["candidates"][0]["name"]);
-                    console.log(parsedResponse["candidates"][0]["formatted_address"]);
-                    let locationMarker = new google.maps.Marker({position: parsedResponse["candidates"][0]["geometry"]["location"], map: map})
+                    businessLocations = [];
+                    businessArray = JSON.parse(this.responseText)["results"];
+                    let numBusinesses = businessArray.length;
+                    for (let i = 0; i < numBusinesses; i += 1){
+                        let locationMarker = new google.maps.Marker({position: businessArray[i]["geometry"]["location"], map: map});
+                        businessLocations.push(locationMarker);
+                    }
                     map.setCenter(pos);
                 }
             };
