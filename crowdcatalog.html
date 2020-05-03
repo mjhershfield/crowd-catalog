@@ -33,7 +33,6 @@
         userMarker.setVisible(false);
         console.log(typeof(pos));
         updateUserPosition();
-        getNearbyPlaces();
       }
 
       function updateUserPosition() {
@@ -46,6 +45,7 @@
             map.setCenter(pos);
             userMarker.setPosition(pos);
             userMarker.setVisible(true);
+            getNearbyPlaces();
           }, function() {
             console.log("geolocation supported but not working");
           });
